@@ -1,35 +1,36 @@
 package confy
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 )
 
 var testJSON = `
 {
-	"root": 5,
-	"root_extra": 10,
+	"Root": 5,
+	"RootExtra": 10,
 	"sub1": {
-		"root": 20,
-		"root_extra": 25
+		"Root": 20,
+		"RootExtra": 25
 	},
 	"sub2": {
-		"root": 30,
-		"root_extra": 35,
+		"Root": 30,
+		"RootExtra": 35,
 		"sub2.1": {
-			"root_extra": 45
+			"RootExtra": 45
 		}
 	},
 	"sub3": {
-		"root": 100
+		"Root": 100
 	},
 	"unrelated": "hello world"
 }
 `
 
 type testConf struct {
-	Root      int `json:"root"`
-	RootExtra int `json:"root_extra"`
+	Root      int
+	RootExtra int
 }
 
 func (tc *testConf) Default() {
@@ -51,6 +52,7 @@ func TestNested(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// TODO: Improve error messages
 	if t1.Root != 20 || t1.RootExtra != 25 {
 		t.Fatal("sub1 did not load correctly")
 	}
@@ -65,5 +67,30 @@ func TestNested(t *testing.T) {
 
 	if t3.Root != 100 || t3.RootExtra != 1024 {
 		t.Fatal("sub3 did not load correctly")
+	}
+}
+
+func TestCycle(t *testing.T) {
+	tc := testConf{
+		Root:      6000,
+		RootExtra: 10000,
+	}
+	c := NewConfig(&tc)
+
+	b := new(bytes.Buffer)
+
+	if err := c.SaveWriter(b); err != nil {
+		t.Fatal("failed saving to writer:", err)
+	}
+
+	tk := testConf{}
+	k := NewConfig(&tk)
+
+	if err := k.LoadReader(b); err != nil {
+		t.Fatal("failed loading from reader:", err)
+	}
+
+	if tk != tc {
+		t.Fatalf("cycling configuration did not return original: %+v != %+v", tk, tc)
 	}
 }

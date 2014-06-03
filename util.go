@@ -15,7 +15,7 @@ func LoadReader(r io.Reader) error {
 
 // LoadReader loads the configuration from r into c.
 func (c *Config) LoadReader(r io.Reader) error {
-	return json.NewDecoder(r).Decode(Default)
+	return json.NewDecoder(r).Decode(c)
 }
 
 // LoadFile loads a configuration from the file indicated by path.
@@ -37,7 +37,7 @@ func SaveWriter(w io.Writer) error {
 // SaveWriter saves the configuration c into w. The result
 // is human-readable indented before writing.
 func (c *Config) SaveWriter(w io.Writer) error {
-	b, err := json.Marshal(Default)
+	b, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}
