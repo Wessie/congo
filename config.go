@@ -1,12 +1,16 @@
 // Package confy is a simple JSON configuration loader.
 //
-// Confy uses the standard library encoding/json package and
-// supports the same things as it does.
-//
-// TODO: More documentation, examples and tests.
+// Confy tries to not get in your way and accepts any kind of
+// structure to load configuration into. Confy uses encoding/json
+// to encode/decode JSON to/from your structure.
 package confy
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+// TODO: More documentation, examples and tests.
 
 // Defaulter is an interface that can be implemented by a Configer
 // to allow for default values to be set.
@@ -19,6 +23,16 @@ type Defaulter interface {
 
 // Configer is a named interface{} for clarity
 type Configer interface{}
+
+// ConfigError is the error returned by local errors.
+type ConfigError struct {
+	Config      *Config
+	Description string
+}
+
+func (err *ConfigError) Error() string {
+	return err.Description
+}
 
 // Config is a configuration manager
 type Config struct {
@@ -37,18 +51,28 @@ func NewConfig(c Configer) *Config {
 	}
 }
 
-// AddSub adds a Config to the current Config under the name given.
-//
-// If previously a Config was already added by the name given, AddSub
-// will return said Config instead of sub. This can never return nil.
-func (c *Config) AddSub(name string, sub *Config) *Config {
+// AddSub adds a Configer to the current Config under the name given.
+// Returns a *ConfigError if the name is already in use.
+func (c *Config) AddSub(name string, sub Configer) error {
+	return c.AddSubConf(name, NewConfig(sub))
+}
+
+// AddSubConf adds a Config to the current Config under the name given.
+// Returns a *ConfigError if the name is already in use.
+func (c *Config) AddSubConf(name string, sub *Config) error {
 	existing, ok := c.Subs[name]
 	if ok {
-		return existing
+		return &ConfigError{
+			Config: c,
+			Description: fmt.Sprintf(
+				"Sub configuration already exists with name '%s' (object: %v)",
+				name, existing,
+			),
+		}
 	}
 
 	c.Subs[name] = sub
-	return sub
+	return nil
 }
 
 func (c *Config) UnmarshalJSON(b []byte) error {

@@ -39,13 +39,13 @@ func (tc *testConf) Default() {
 
 func TestNested(t *testing.T) {
 	c := NewConfig(&testConf{})
-	t1, t2, t21, t3 := &testConf{}, &testConf{}, &testConf{}, &testConf{}
-	sub1, sub2, sub21, sub3 := NewConfig(t1), NewConfig(t2), NewConfig(t21), NewConfig(t3)
 
-	c.AddSub("sub1", sub1)
-	c.AddSub("sub2", sub2)
-	sub2.AddSub("sub2.1", sub21)
-	c.AddSub("sub3", sub3)
+	t1, t2, t21, t3 := &testConf{}, &testConf{}, &testConf{}, &testConf{}
+
+	c.AddSub("sub1", t1)
+	c.AddSub("sub2", t2)
+	c.Subs["sub2"].AddSub("sub2.1", t21)
+	c.AddSub("sub3", t3)
 
 	if err := json.Unmarshal([]byte(testJSON), c); err != nil {
 		t.Fatal(err)
