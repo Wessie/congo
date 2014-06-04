@@ -51,7 +51,7 @@ func (c *Config) LoadReader(r io.Reader) error {
 	// Special case an io.EOF if we have read 0 bytes. It makes
 	// no sense to error in the case of an empty configuration file.
 	if err == io.EOF && rc.n == 0 {
-		c.FullDefault()
+		c.DefaultAll()
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func SaveWriter(w io.Writer) error {
 }
 
 // SaveWriter saves the configuration c into w. The result
-// is human-readable indented before writing.
+// is human-readable indented.
 func (c *Config) SaveWriter(w io.Writer) error {
 	b, err := json.MarshalIndent(c, "", Indentation)
 	if err != nil {

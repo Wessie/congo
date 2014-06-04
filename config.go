@@ -12,16 +12,17 @@ import (
 // Defaulter is an interface that can be implemented by a Configer
 // to allow for default values to be set.
 type Defaulter interface {
-	// Default is called on a Defaulter to fill the Defaulter
-	// with the default values. This is done before Unmarshalling
-	// into the Defaulter.
+	// Default is called on a Defaulter to fill the value with
+	// the default values. This is done before any Unmarshal
+	// calls are made on the value.
 	Default()
 }
 
 // Configer is a named interface{} for clarity
 type Configer interface{}
 
-// ConfigError is the error returned by local errors.
+// ConfigError is the error returned when an error occurs in
+// congo logic. encoding/json errors are passed as-is currently.
 type ConfigError struct {
 	Config      *Config
 	Description string
@@ -39,7 +40,7 @@ type Config struct {
 }
 
 // NewConfig returns a new configuration manager, using c as its
-// root Configer.
+// root.
 func NewConfig(c Configer) *Config {
 	return &Config{
 		Configer: c,
@@ -48,14 +49,14 @@ func NewConfig(c Configer) *Config {
 	}
 }
 
-// FullDefault calls Default on all Defaulters in Configer and Subs.
-func (c *Config) FullDefault() {
+// DefaultAll calls Default on c.Configer and any Defaulters in c.Subs
+func (c *Config) DefaultAll() {
 	if d, ok := c.Configer.(Defaulter); ok {
 		d.Default()
 	}
 
 	for _, sub := range c.Subs {
-		sub.FullDefault()
+		sub.DefaultAll()
 	}
 }
 
@@ -84,8 +85,8 @@ func (c *Config) AddSubConf(name string, sub *Config) error {
 }
 
 func (c *Config) UnmarshalJSON(b []byte) error {
-	// OPTI: This is wasteful due to the recursive calls
-	c.FullDefault()
+	// TODO: This is wasteful due to the recursive calls
+	c.DefaultAll()
 
 	if c.Configer == nil {
 	} else if err := json.Unmarshal(b, c.Configer); err != nil {
