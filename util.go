@@ -13,9 +13,30 @@ func LoadReader(r io.Reader) error {
 	return Default.LoadReader(r)
 }
 
+type countedReader struct {
+	io.Reader
+	n int
+}
+
+func (r *countedReader) Read(p []byte) (n int, err error) {
+	n, err = r.Reader.Read(p)
+	r.n += n
+	return n, err
+}
+
 // LoadReader loads the configuration from r into c.
 func (c *Config) LoadReader(r io.Reader) error {
-	return json.NewDecoder(r).Decode(c)
+	rc := &countedReader{Reader: r}
+	err := json.NewDecoder(rc).Decode(c)
+
+	// Special case an io.EOF if we have read 0 bytes. It makes
+	// no sense to error in the case of an empty configuration file.
+	if err == io.EOF && rc.n == 0 {
+		c.FullDefault()
+		return nil
+	}
+
+	return err
 }
 
 // LoadFile loads a configuration from the file indicated by path.
@@ -37,7 +58,7 @@ func SaveWriter(w io.Writer) error {
 // SaveWriter saves the configuration c into w. The result
 // is human-readable indented before writing.
 func (c *Config) SaveWriter(w io.Writer) error {
-	b, err := json.Marshal(c)
+	b, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		return err
 	}
