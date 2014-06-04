@@ -1,16 +1,17 @@
-/* Package confy is a simple JSON configuration loader.
+/*
+Package confy is a simple JSON configuration loader.
 
 Lets jump right into an example, say you have the following
 configuration file (in JSON) for a simple http server with
 access to a database.
 
 	{
-		"address": ":8050",
-		"db": {
-			"host": "localhost",
-			"port": 5000,
-			"user": "admin",
-			"passwd": "hackme",
+		"Address": ":8050",
+		"DB": {
+			"Host": "localhost",
+			"Port": 5000,
+			"User": "admin",
+			"Passwd": "hackme",
 		}
 	}
 
@@ -21,7 +22,7 @@ struct that can hold the configuration. So lets do that.
 
 	type Config struct {
 		Address string
-		Database DatabaseConfig `json:"db"`
+		Database DatabaseConfig `json:"DB"`
 	}
 
 	type DatabaseConfig struct {
@@ -40,11 +41,11 @@ Issues
 This approach works, and is fairly simple to understand. But there are some
 issues with it.
 
-1. Most of this configuration isn't global, it's intended for some specific part of your
-	program. The database config above is only needed by your sql.DB setup.
-2. Handling default values in your configuration quickly gets ugly.
-3. If you want to write the config back to file you need to remove default values again,
-	because you don't want all your default values in the file.
+	1. Most of this configuration isn't global, it's intended for some specific part of your
+		program. The database config above is only needed by your sql.DB setup.
+	2. Handling default values in your configuration quickly gets ugly.
+	3. If you want to write the config back to file you need to remove default values again,
+		because you don't want all your default values in the file.
 
 Basic Congo
 
