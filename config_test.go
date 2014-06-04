@@ -115,3 +115,19 @@ func TestDefault(t *testing.T) {
 		t.Errorf("default value was not set correctly: %v != %v", tc.Extra, tcExtraDefault)
 	}
 }
+
+func TestNilRoot(t *testing.T) {
+	tc, c := new(testConf), NewConfig(nil)
+	c.AddSub("sub", tc)
+
+	conf := `{"sub":{"Root":50}}`
+	if err := c.UnmarshalJSON([]byte(conf)); err != nil {
+		t.Fatal("failed unmarshalling nil root:", err)
+	}
+
+	if b, err := c.MarshalJSON(); err != nil {
+		t.Fatal("failed marshalling nil root:", err)
+	} else if string(b) != conf {
+		t.Fatal("received different result: %v != %v", string(b), conf)
+	}
+}

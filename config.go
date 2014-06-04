@@ -87,7 +87,8 @@ func (c *Config) UnmarshalJSON(b []byte) error {
 	// OPTI: This is wasteful due to the recursive calls
 	c.FullDefault()
 
-	if err := json.Unmarshal(b, c.Configer); err != nil {
+	if c.Configer == nil {
+	} else if err := json.Unmarshal(b, c.Configer); err != nil {
 		return err
 	}
 
