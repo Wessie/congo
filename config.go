@@ -1,4 +1,4 @@
-package confy
+package congo
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 )
 
-// TODO: More documentation, examples and tests.
+// BUG(Wessie): Anything not JSON-object will error as root of a tree.
 
 // Defaulter is an interface that can be implemented by a Configer
 // to allow for default values to be set.

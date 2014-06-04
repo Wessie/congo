@@ -1,4 +1,4 @@
-package confy
+package congo
 
 import (
 	"encoding/json"
@@ -6,7 +6,23 @@ import (
 	"os"
 )
 
+// Indentation indicates what to indent the JSON with when
+// writing it out.
+var Indentation = "\t"
+
+// Default is a global config for when you don't need more
+// than just that.
 var Default = NewConfig(nil)
+
+// SetRoot sets the root of the Default configuration.
+func SetRoot(conf Configer) {
+	Default.SetRoot(conf)
+}
+
+// SetRoot sets the root Configer in the configuration
+func (c *Config) SetRoot(conf Configer) {
+	c.Configer = conf
+}
 
 // LoadReader calls Config.LoadReader on the Default config
 func LoadReader(r io.Reader) error {
@@ -25,6 +41,9 @@ func (r *countedReader) Read(p []byte) (n int, err error) {
 }
 
 // LoadReader loads the configuration from r into c.
+//
+// If the reader passed in contains no data the configuration
+// will be set to it's default value with the aid of Defaulter's.
 func (c *Config) LoadReader(r io.Reader) error {
 	rc := &countedReader{Reader: r}
 	err := json.NewDecoder(rc).Decode(c)
@@ -58,7 +77,7 @@ func SaveWriter(w io.Writer) error {
 // SaveWriter saves the configuration c into w. The result
 // is human-readable indented before writing.
 func (c *Config) SaveWriter(w io.Writer) error {
-	b, err := json.MarshalIndent(c, "", "\t")
+	b, err := json.MarshalIndent(c, "", Indentation)
 	if err != nil {
 		return err
 	}
@@ -71,7 +90,8 @@ func (c *Config) SaveWriter(w io.Writer) error {
 }
 
 // SaveFile saves a configuration into the file indicated by path.
-// For more control of saving see SaveWriter.
+//
+// This calls SaveWriter underneath and the same indenting applies.
 func (c *Config) SaveFile(path string) error {
 	f, err := os.Create(path)
 	if err != nil {

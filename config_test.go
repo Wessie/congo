@@ -1,4 +1,4 @@
-package confy
+package congo
 
 import (
 	"bytes"
