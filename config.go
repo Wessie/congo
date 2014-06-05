@@ -55,6 +55,10 @@ func (c *Config) AddSub(name string, sub Configer) error {
 	return c.AddSubConf(name, NewConfig(sub))
 }
 
+func AddSub(name string, sub Configer) error {
+	return Default.AddSub(name, sub)
+}
+
 // AddSubConf adds a Config to the current Config under the name given.
 // Returns a *ConfigError if the name is already in use.
 func (c *Config) AddSubConf(name string, sub *Config) error {
