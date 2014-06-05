@@ -21,17 +21,6 @@ type Defaulter interface {
 // Configer is a named interface{} for clarity
 type Configer interface{}
 
-// ConfigError is the error returned when an error occurs in
-// congo logic. encoding/json errors are passed as-is currently.
-type ConfigError struct {
-	Config      *Config
-	Description string
-}
-
-func (err *ConfigError) Error() string {
-	return err.Description
-}
-
 // Config is a configuration manager
 type Config struct {
 	Configer

@@ -109,7 +109,7 @@ func TestDefault(t *testing.T) {
 	}
 
 	if tc.Root != tcRootDefault {
-		t.Errorf("default values were not set correctly: %v != %v", tc.Root, tcRootDefault)
+		t.Errorf("default value was not set correctly: %v != %v", tc.Root, tcRootDefault)
 	}
 	if tc.Extra != tcExtraDefault {
 		t.Errorf("default value was not set correctly: %v != %v", tc.Extra, tcExtraDefault)
