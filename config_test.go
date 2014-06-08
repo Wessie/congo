@@ -131,3 +131,17 @@ func TestNilRoot(t *testing.T) {
 		t.Fatal("received different result: %v != %v", string(b), conf)
 	}
 }
+
+func TestLateAdd(t *testing.T) {
+	tc, c := new(testConf), NewConfig(nil)
+
+	if err := c.UnmarshalJSON([]byte(testJSON)); err != nil {
+		t.Fatal("failed unmarshalling:", err)
+	}
+
+	c.AddSub("sub1", tc)
+
+	if tc.Root != 15 || tc.Extra != 20 {
+		t.Fatal("failed late add: %d != %d || %d != %d", tc.Root, 15, tc.Extra, 20)
+	}
+}

@@ -50,7 +50,7 @@ func (c *Config) DefaultAll() {
 }
 
 // AddSub adds a Configer to the current Config under the name given.
-// Returns a *ConfigError if the name is already in use.
+// See AddSubConf for extra behaviour, this is a wrapper of it.
 func (c *Config) AddSub(name string, sub Configer) error {
 	return c.AddSubConf(name, NewConfig(sub))
 }
@@ -60,7 +60,12 @@ func AddSub(name string, sub Configer) error {
 }
 
 // AddSubConf adds a Config to the current Config under the name given.
-// Returns a *ConfigError if the name is already in use.
+//
+// If a configuration was already loaded before the call to AddSubConf the
+// new Config will be filled with any data from the previous load.
+//
+// Returns a *ConfigError if the name is already in use or a JSON error if
+// something went wrong unmarshalling.
 func (c *Config) AddSubConf(name string, sub *Config) error {
 	existing, ok := c.Subs[name]
 	if ok {
@@ -74,6 +79,19 @@ func (c *Config) AddSubConf(name string, sub *Config) error {
 	}
 
 	c.Subs[name] = sub
+
+	// Check if we've already parsed JSON, if so check for the new name and
+	// unmarshal it into the new config we just registered.
+	if len(c.Raws) > 0 {
+		raw, ok := c.Raws[name]
+		if !ok {
+			// It isn't an error if we have nothing for the new config
+			return nil
+		}
+
+		// Is an error if unmarshalling borks, so return that
+		return json.Unmarshal(*raw, sub)
+	}
 	return nil
 }
 
