@@ -100,3 +100,11 @@ func (c *Config) SaveFile(path string) error {
 
 	return c.SaveWriter(f)
 }
+
+// MustAddSub acts similar to other Must* functions known in Go and calls
+// c.AddSub(name, cf). If AddSub returns an error it will panic.
+func MustAddSub(c *Config, name string, cf Configer) {
+	if err := c.AddSub(name, cf); err != nil {
+		panic("failed to add configuration section:" + err.Error())
+	}
+}
