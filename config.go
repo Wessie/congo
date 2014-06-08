@@ -23,6 +23,7 @@ type Configer interface{}
 
 // Config is a configuration manager
 type Config struct {
+	Loaded bool
 	Configer
 	Subs map[string]*Config
 	Raws map[string]*json.RawMessage
@@ -40,6 +41,7 @@ func NewConfig(c Configer) *Config {
 
 // DefaultAll calls Default on c.Configer and any Defaulters in c.Subs
 func (c *Config) DefaultAll() {
+	c.Loaded = true
 	if d, ok := c.Configer.(Defaulter); ok {
 		d.Default()
 	}
@@ -82,10 +84,14 @@ func (c *Config) AddSubConf(name string, sub *Config) error {
 
 	// Check if we've already parsed JSON, if so check for the new name and
 	// unmarshal it into the new config we just registered.
-	if len(c.Raws) > 0 {
+	if c.Loaded {
 		raw, ok := c.Raws[name]
 		if !ok {
 			// It isn't an error if we have nothing for the new config
+			// except some defaults.
+			if d, ok := sub.Configer.(Defaulter); ok {
+				d.Default()
+			}
 			return nil
 		}
 
@@ -96,6 +102,8 @@ func (c *Config) AddSubConf(name string, sub *Config) error {
 }
 
 func (c *Config) UnmarshalJSON(b []byte) error {
+	c.Loaded = true
+
 	// TODO: This is wasteful due to the recursive calls
 	c.DefaultAll()
 
